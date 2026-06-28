@@ -67,3 +67,10 @@ cae al almacén local de desarrollo.
 | Type-check | `npm run typecheck` |
 | Build | `npm run build` |
 | Producción local | `npm run start` |
+
+## Mantener viva la base de datos (keep-alive)
+
+El proyecto gratuito de Supabase se pausa tras ~1 semana sin actividad. Para
+evitarlo, `vercel.json` define un **cron diario** que llama a `/api/ping`, que hace
+una lectura mínima en Supabase. Se activa solo al desplegar en Vercel; no hay que
+configurar nada. Si la web se usa con normalidad, ni siquiera hace falta.

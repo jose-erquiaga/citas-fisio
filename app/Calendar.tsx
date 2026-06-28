@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ALLOWED_WEEKDAYS, SLOTS_PER_DAY } from "@/lib/config";
 import { toDateKey, parseDateKey } from "@/lib/dates";
@@ -28,6 +28,13 @@ export default function Calendar({
   const router = useRouter();
   const now = parseDateKey(today);
   const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() });
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const go = (key: string) => {
+    setPendingKey(key);
+    startTransition(() => router.push(`${hrefBase}/${key}`));
+  };
 
   const first = new Date(view.y, view.m, 1);
   const leading = (first.getDay() + 6) % 7; // huecos antes del día 1 (lunes primero)
@@ -100,15 +107,23 @@ export default function Calendar({
             );
           }
 
+          const loading = isPending && pendingKey === key;
+
+          let color: string;
+          if (loading) {
+            color = "bg-green-600 text-white ring-2 ring-green-700";
+          } else if (full) {
+            color = "bg-red-50 text-red-700 hover:bg-red-100 active:bg-red-200";
+          } else {
+            color = "bg-green-50 text-green-900 hover:bg-green-100 active:bg-green-200";
+          }
+
           return (
             <button
               key={key}
-              onClick={() => router.push(`${hrefBase}/${key}`)}
-              className={`flex aspect-square flex-col items-center justify-center rounded-lg text-sm font-medium transition ${
-                full
-                  ? "bg-red-50 text-red-700 hover:bg-red-100"
-                  : "bg-green-50 text-green-900 hover:bg-green-100"
-              }`}
+              onClick={() => go(key)}
+              disabled={isPending}
+              className={`flex aspect-square flex-col items-center justify-center rounded-lg text-sm font-medium transition active:scale-95 ${color}`}
               title={
                 full ? "Completo" : `${free} plaza${free === 1 ? "" : "s"} libre${free === 1 ? "" : "s"}`
               }
@@ -116,10 +131,14 @@ export default function Calendar({
               <span className="text-sm font-semibold">{day}</span>
               <span
                 className={`mt-0.5 text-[10px] font-medium leading-none ${
-                  full ? "text-red-600" : "text-green-700"
+                  loading
+                    ? "text-white"
+                    : full
+                    ? "text-red-600"
+                    : "text-green-700"
                 }`}
               >
-                {full ? "Lleno" : `${free} libre${free === 1 ? "" : "s"}`}
+                {loading ? "Abriendo…" : full ? "Lleno" : `${free} libre${free === 1 ? "" : "s"}`}
               </span>
             </button>
           );
