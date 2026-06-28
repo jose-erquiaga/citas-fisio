@@ -33,6 +33,7 @@ export async function reserveAction(
 
   const result = await store.create(dateKey, slotTime, name);
   revalidatePath("/");
+  revalidatePath(`/dia/${dateKey}`);
   revalidatePath("/admin");
 
   if (!result.ok) {

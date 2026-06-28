@@ -5,7 +5,7 @@ import { reserveAction, type ReserveState } from "./actions";
 
 export interface SlotView {
   time: string;
-  taken: boolean;
+  takenBy?: string; // nombre de quien lo reservó; vacío = libre
 }
 
 const initial: ReserveState = { status: "idle" };
@@ -21,7 +21,7 @@ export default function DayCard({
 }) {
   const [state, formAction, pending] = useActionState(reserveAction, initial);
 
-  const freeCount = slots.filter((s) => !s.taken).length;
+  const freeCount = slots.filter((s) => !s.takenBy).length;
   const full = freeCount === 0;
 
   return (
@@ -39,20 +39,9 @@ export default function DayCard({
         )}
       </div>
 
-      {full ? (
-        <ul className="grid grid-cols-2 gap-2">
-          {slots.map((s) => (
-            <li
-              key={s.time}
-              className="rounded-lg bg-gray-100 px-3 py-2 text-center text-sm text-gray-400 line-through"
-            >
-              {s.time}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <form action={formAction} className="space-y-3">
-          <input type="hidden" name="booking_date" value={dateKey} />
+      <form action={formAction} className="space-y-3">
+        <input type="hidden" name="booking_date" value={dateKey} />
+        {!full && (
           <input
             type="text"
             name="player_name"
@@ -61,31 +50,36 @@ export default function DayCard({
             required
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
           />
-          <div className="grid grid-cols-2 gap-2">
-            {slots.map((s) =>
-              s.taken ? (
-                <span
-                  key={s.time}
-                  className="rounded-lg bg-gray-100 px-3 py-2 text-center text-sm text-gray-400 line-through"
-                >
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          {slots.map((s) =>
+            s.takenBy ? (
+              <div
+                key={s.time}
+                className="rounded-lg bg-gray-100 px-3 py-2 text-center"
+              >
+                <div className="text-sm font-semibold text-gray-700">
                   {s.time}
-                </span>
-              ) : (
-                <button
-                  key={s.time}
-                  type="submit"
-                  name="slot_time"
-                  value={s.time}
-                  disabled={pending}
-                  className="rounded-lg bg-green-700 px-3 py-2 text-center text-sm font-medium text-white transition hover:bg-green-800 disabled:opacity-50"
-                >
-                  Reservar {s.time}
-                </button>
-              )
-            )}
-          </div>
-        </form>
-      )}
+                </div>
+                <div className="truncate text-xs text-gray-500" title={s.takenBy}>
+                  {s.takenBy}
+                </div>
+              </div>
+            ) : (
+              <button
+                key={s.time}
+                type="submit"
+                name="slot_time"
+                value={s.time}
+                disabled={pending}
+                className="rounded-lg bg-green-700 px-3 py-2 text-center text-sm font-medium text-white transition hover:bg-green-800 disabled:opacity-50"
+              >
+                Reservar {s.time}
+              </button>
+            )
+          )}
+        </div>
+      </form>
 
       {state.status !== "idle" && state.message && (
         <p
