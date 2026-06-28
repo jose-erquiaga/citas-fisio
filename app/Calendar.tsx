@@ -19,9 +19,11 @@ function isFisioDay(d: Date): boolean {
 export default function Calendar({
   counts,
   today,
+  hrefBase = "/dia",
 }: {
   counts: Record<string, number>;
   today: string; // YYYY-MM-DD
+  hrefBase?: string; // ruta destino al pulsar un día (público: /dia, admin: /admin/dia)
 }) {
   const router = useRouter();
   const now = parseDateKey(today);
@@ -101,7 +103,7 @@ export default function Calendar({
           return (
             <button
               key={key}
-              onClick={() => router.push(`/dia/${key}`)}
+              onClick={() => router.push(`${hrefBase}/${key}`)}
               className={`flex aspect-square flex-col items-center justify-center rounded-lg text-sm font-medium transition ${
                 full
                   ? "bg-red-50 text-red-700 hover:bg-red-100"

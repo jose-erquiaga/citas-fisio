@@ -43,6 +43,11 @@ export async function cancelAction(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await store.remove(id);
+  const date = String(formData.get("booking_date") ?? "");
   revalidatePath("/admin");
   revalidatePath("/");
+  if (date) {
+    revalidatePath(`/admin/dia/${date}`);
+    revalidatePath(`/dia/${date}`);
+  }
 }
